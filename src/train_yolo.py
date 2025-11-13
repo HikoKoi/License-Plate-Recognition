@@ -2,8 +2,10 @@ import torch
 from ultralytics import YOLO
 
 
+MODEL_NAME = "models/yolov8n.pt"
+
 def main():
-    model = YOLO("models/yolov8n.pt")
+    model = YOLO(MODEL_NAME)
 
     model.train(
         data="./dataset/license_plate.yaml",

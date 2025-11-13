@@ -1,14 +1,9 @@
 from pathlib import Path
 import cv2
-import numpy as np
 from ultralytics import YOLO
 from unsloth import FastVisionModel
 from transformers import TextStreamer
 
-
-# ================================
-# 1. ĐƯỜNG DẪN
-# ================================
 TEST_IMG_DIR = Path("./dataset/yolo/images/test")
 OUTPUT_DIR = Path("./dataset/outputs/ocr")
 
@@ -16,19 +11,11 @@ YOLO_WEIGHTS = "models/license_plate_yolov8/weights/best.pt"    # YOLO detect
 UNSLOTH_OCR_DIR = "models/unsloth_ocr"                            # model đã finetune OCR
 
 
-# ================================
-# 2. HÀM TIỆN ÍCH
-# ================================
 def ensure_dir(path: Path):
     path.mkdir(parents=True, exist_ok=True)
 
 
 def draw_box_text(img, box, text):
-    """
-    Vẽ bbox + text lên ảnh.
-    box: (x1, y1, x2, y2)
-    text: chuỗi OCR
-    """
     x1, y1, x2, y2 = map(int, box)
 
     # Vẽ bbox
@@ -46,14 +33,7 @@ def draw_box_text(img, box, text):
     return img
 
 
-# ================================
-# 3. Load OCR Model (Unsloth)
-# ================================
 def load_ocr_model():
-    """
-    Load Unsloth model đã merge từ folder models/unsloth_ocr
-    """
-    print("🔤 Loading OCR model...")
     model, tokenizer = FastVisionModel.from_pretrained(
         UNSLOTH_OCR_DIR,
         load_in_4bit=True,
@@ -63,17 +43,7 @@ def load_ocr_model():
     FastVisionModel.for_inference(model)
     return model, tokenizer
 
-
-# ================================
-# 4. OCR Một ảnh crop
-# ================================
 def ocr_plate(model, tokenizer, crop_img_np):
-    """
-    Input:
-        crop_img_np: numpy array (BGR)
-    Output:
-        text OCR (string)
-    """
     # convert sang RGB
     crop_rgb = cv2.cvtColor(crop_img_np, cv2.COLOR_BGR2RGB)
 
@@ -109,13 +79,10 @@ def ocr_plate(model, tokenizer, crop_img_np):
     return text_out
 
 
-# ================================
-# 5. Xử lý 1 ảnh
-# ================================
 def process_image(yolo, ocr_model, tokenizer, img_path: Path):
     img = cv2.imread(str(img_path))
     if img is None:
-        print(f"❌ Không đọc được ảnh: {img_path}")
+        print(f"Không đọc được ảnh: {img_path}")
         return None
 
     # YOLO detect
@@ -139,11 +106,8 @@ def process_image(yolo, ocr_model, tokenizer, img_path: Path):
     return img
 
 
-# ================================
-# 6. MAIN
-# ================================
 def main():
-    print("🚗 Loading YOLO detector...")
+    print("Loading YOLO detector...")
     yolo = YOLO(YOLO_WEIGHTS)
 
     ocr_model, tokenizer = load_ocr_model()
@@ -154,7 +118,7 @@ def main():
     print(f"Tìm thấy {len(img_files)} ảnh test.")
 
     for img_path in img_files:
-        print(f"➡ Xử lý: {img_path.name}")
+        print(f"Processing: {img_path.name}")
 
         out_img = process_image(yolo, ocr_model, tokenizer, img_path)
         if out_img is None:
@@ -163,7 +127,7 @@ def main():
         out_path = OUTPUT_DIR / img_path.name
         cv2.imwrite(str(out_path), out_img)
 
-    print(f"🎉 Xong! Ảnh output lưu tại: {OUTPUT_DIR}")
+    print(f"Ảnh output lưu tại: {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -10,13 +10,16 @@ list_of_files = [
     "dataset/yolo/images/test",
     "dataset/yolo/labels/train",
     "dataset/yolo/labels/val",
-    "dataset/yolo/labels/test",
     "dataset/license_plate.yaml",
-    "models/test.py",
-    "models/train_yolo.py",
+    "models",
+    "src/finetune_ocr.py",
+    "src/train_yolo.py",
+    "test/test_yaml.py",
+    "test/test_yolo.py",
+    "test/test_ocr.py",
     "requirements.txt",
     "setup.py",
-    "app.py",
+    "main.py",
 ]
 
 for filepath in list_of_files:

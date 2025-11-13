@@ -52,7 +52,7 @@ source venv/Scripts/activate
 ``` bash
 pip install -r requirements.txt
 ```
-## STEP-03: Thêm data của bạn để traning cho mô hình nhận diện:
+## STEP-03: Thêm data của bạn để training cho mô hình nhận diện:
 
 Có thể sử dụng label-studio.
 
@@ -73,7 +73,7 @@ python src/train_yolo.py
 python src/finetune_OCR.py
 ```
 
-## STEP-04: Chạy các chương trình chính:
+## STEP-04: Chạy chương trình chính:
 
 ``` bash
 streamlit run main.py

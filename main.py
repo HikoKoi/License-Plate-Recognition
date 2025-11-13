@@ -9,19 +9,15 @@ import re
 import threading
 import tempfile
 
-# ----------------------------
-# Helper: load models once
-# ----------------------------
+
 @st.cache_resource
-def load_models(yolo_path="files_model/license_plate_detector_yolov8.pt", unsloth_path="files_model/unsloth_finetune"):
+def load_models(yolo_path="models/license_plate_yolov8/weights/best.pt", unsloth_path="models/unsloth_ocr"):
     yolo = YOLO(yolo_path)
     ocr_model, ocr_tokenizer = FastVisionModel.from_pretrained(model_name=unsloth_path, load_in_4bit=True, use_bfloat16=False)
     FastVisionModel.for_inference(ocr_model)
     return yolo, ocr_model, ocr_tokenizer
 
-# ----------------------------
-# Recognizer class (same logic as yours)
-# ----------------------------
+
 class LicensePlateRecognizer:
     def __init__(self, yolo, ocr_model, ocr_tokenizer, device="cuda"):
         self.yolo = yolo
@@ -68,9 +64,7 @@ class LicensePlateRecognizer:
         text = text.strip().upper()
         return re.sub(r'[^A-Z0-9\-.]', '', text)
 
-# ----------------------------
-# Video capture thread for RTSP / webcam
-# ----------------------------
+
 class VideoCaptureThread:
     def __init__(self, src=0):
         self.src = src
@@ -104,9 +98,7 @@ class VideoCaptureThread:
     def stop(self):
         self.running = False
 
-# ----------------------------
-# Streamlit UI
-# ----------------------------
+
 st.set_page_config(page_title="LPR - Real-time", page_icon="🚘", layout="wide")
 st.title("🚘 License Plate Recognition - Image & Real-time Stream")
 
@@ -124,9 +116,7 @@ show_boxes = st.sidebar.checkbox("Show bounding boxes & text", value=True)
 max_boxes = st.sidebar.slider("Max plates to display per frame", 1, 10, 1)
 process_every_n_frame = st.sidebar.slider("Process every N-th frame (video)", 1, 30, 5)
 
-# ----------------------------
-# IMAGE UPLOAD
-# ----------------------------
+
 if mode == "Image Upload":
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
@@ -162,9 +152,7 @@ if mode == "Image Upload":
                     int(elapsed % 60)
                 ))
 
-# ----------------------------
-# VIDEO UPLOAD
-# ----------------------------
+
 elif mode == "Video Upload":
     uploaded_video = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
     if uploaded_video is not None:
@@ -237,10 +225,7 @@ elif mode == "Video Upload":
         print("\nDone!")
 
 
-# ----------------------------
-# Webcam (local), RTSP / IP Camera
-# ----------------------------                   
-'''
+              
 elif mode in ("Webcam (local)", "RTSP / IP Camera"):
     if mode == "Webcam (local)":
         src = st.sidebar.text_input("Webcam index", "0")
@@ -311,7 +296,7 @@ elif mode in ("Webcam (local)", "RTSP / IP Camera"):
         except Exception as e:
             info_slot.error(f"Stream error: {e}")
             st.session_state.video_thread = None
-'''
+
 # Footer / tips
 st.markdown("---")
 st.write("**Mẹo:**")

@@ -9,7 +9,7 @@ TEST_IMG_DIR = Path("./dataset/yolo/images/test")
 OUTPUT_DIR = Path("./dataset/outputs/detect")
 
 # Trọng số YOLO đã train xong (best.pt)
-WEIGHTS = "models/license_plate_yolov8n/weights/best.pt"
+WEIGHTS = "models/license_plate_yolov8/weights/best.pt"
 
 
 def ensure_dir(path: Path):

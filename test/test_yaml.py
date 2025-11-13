@@ -1,12 +1,14 @@
 import torch
 from ultralytics import YOLO
 
+MODEL_NAME = "models/yolov8n.pt"
+
 print("=== KIỂM TRA TORCH ===")
 print("Phiên bản torch:", torch.__version__)
 print("Có GPU CUDA không?:", torch.cuda.is_available())
 
 print("\n=== KIỂM TRA TẢI MODEL YOLO CƠ BẢN ===")
-model = YOLO("models/yolov8n.pt")
+model = YOLO(MODEL_NAME)
 print("Model YOLO đã load xong.")
 
 print("\n=== KIỂM TRA YAML DATASET ===")

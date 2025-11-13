@@ -1,14 +1,15 @@
 from unsloth import FastVisionModel
-from datasets import load_dataset
 from unsloth.trainer import UnslothVisionDataCollator
+from datasets import load_dataset
 from trl import SFTTrainer, SFTConfig
-from transformers import TextStreamer
 
 
-MODEL_NAME = "unsloth/Qwen2-VL-2B-Instruct-bnb-4bit"
-OUTPUT_DIR = "outputs"
+MODEL_NAME = "unsloth/Qwen2-VL-2B-Instruct-bnb-4bit"   # model base 4bit
+OUTPUT_DIR = "models/unsloth_training_logs"            # log/checkpoint tạm
+FINAL_MODEL_DIR = "models/unsloth_ocr"                 # nơi lưu model đã merge
 SEED = 42
 MAX_STEPS = 50
+DEVICE = "cuda"                                        # "cuda" hoặc "cpu" (cpu rất chậm)
 
 INSTRUCTION = """
 You are a world-class OCR expert specializing in recognizing all types of vehicle license plates
@@ -25,117 +26,106 @@ List each license plate you find on a separate line, with no extra words,
 symbols, or explanations.
 """
 
-model, tokenizer = FastVisionModel.from_pretrained(
-    MODEL_NAME,
-    load_in_4bit=True,
-    use_gradient_checkpointing="unsloth"
-)
 
-model = FastVisionModel.get_peft_model(
-    model,
-    finetune_vision_layers=True,
-    finetune_language_layers=True,
-    finetune_attention_modules=True,
-    finetune_mlp_modules=True,
-    r=8,
-    lora_alpha=16,
-    lora_dropout=0,
-    bias="none",
-    random_state=SEED,
-)
+def load_raw_dataset():
+    dataset = load_dataset("EZCon/taiwan-license-plate-recognition", split="train")
+    dataset = dataset.remove_columns(["xywhr", "is_electric_car"])
+    dataset = dataset.rename_column("license_number", "text")
+    return dataset
 
-# Tải dataset từ Hugging Face để fine-tune
-dataset = load_dataset("EZCon/taiwan-license-plate-recognition", split="train")
-dataset = dataset.remove_columns(["xywhr", "is_electric_car"])
-dataset = dataset.rename_column("license_number", "text")
 
-def convert_to_conversation(sample):
+def convert_sample_to_conversation(sample):
     return {
         "messages": [
             {
                 "role": "user",
                 "content": [
                     {"type": "text", "text": INSTRUCTION},
-                    {"type": "image", "image": sample["image"]}
-                ]
+                    {"type": "image", "image": sample["image"]},
+                ],
             },
             {
                 "role": "assistant",
                 "content": [
-                    {"type": "text", "text": sample["text"]}
-                ]
-            }
+                    {"type": "text", "text": sample["text"]},
+                ],
+            },
         ]
     }
 
-converted_dataset = [convert_to_conversation(sample) for sample in dataset]
+
+def get_converted_dataset():
+    raw_dataset = load_raw_dataset()
+    converted_dataset = [convert_sample_to_conversation(s) for s in raw_dataset]
+    return converted_dataset
 
 
-# =========================
-# 5. Test trước khi train
-# =========================
-FastVisionModel.for_inference(model)
 
-test_image = dataset[2]["image"]
-messages = [
-    {"role": "user", "content": [
-        {"type": "image", "image": test_image},
-        {"type": "text", "text": INSTRUCTION}
-    ]}
-]
+def load_model_and_tokenizer():
+    model, tokenizer = FastVisionModel.from_pretrained(
+        MODEL_NAME,
+        load_in_4bit=True,
+        use_gradient_checkpointing="unsloth",
+    )
 
-input_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
-inputs = tokenizer(test_image, input_text, add_special_tokens=False, return_tensors="pt").to("cuda")
+    model = FastVisionModel.get_peft_model(
+        model,
+        finetune_vision_layers=True,
+        finetune_language_layers=True,
+        finetune_attention_modules=True,
+        finetune_mlp_modules=True,
+        r=8,
+        lora_alpha=16,
+        lora_dropout=0,
+        bias="none",
+        random_state=SEED,
+    )
 
-print("\nBefore training:")
-text_streamer = TextStreamer(tokenizer, skip_prompt = True)
-result = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128,
-                   use_cache = True, temperature = 1.5, min_p = 0.1)
-
-
-# =========================
-# 6. Huấn luyện
-# =========================
-FastVisionModel.for_training(model)
-
-trainer = SFTTrainer(
-    model=model,
-    tokenizer=tokenizer,
-    data_collator=UnslothVisionDataCollator(model, tokenizer),
-    train_dataset=converted_dataset,
-    args=SFTConfig(
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=4,
-        warmup_steps=5,
-        max_steps=MAX_STEPS,
-        learning_rate=2e-4,
-        logging_steps=1,
-        optim="adamw_8bit",
-        weight_decay=0.01,
-        lr_scheduler_type="linear",
-        seed=SEED,
-        output_dir=OUTPUT_DIR,
-        report_to="none",
-        remove_unused_columns=False,
-        dataset_text_field="",
-        dataset_kwargs={"skip_prepare_dataset": True},
-        max_length=2048,
-    ),
-)
-
-trainer_stats = trainer.train()
+    return model, tokenizer
 
 
-# =========================
-# 7. Test sau khi train
-# =========================
-FastVisionModel.for_inference(model)
+def main():
+    # Dataset
+    converted_dataset = get_converted_dataset()
 
-print("\nAfter training:")
-result = model.generate(**inputs, streamer = text_streamer, max_new_tokens = 128,
-                   use_cache = True, temperature = 1.5, min_p = 0.1)
+    # Model + tokenizer
+    model, tokenizer = load_model_and_tokenizer()
 
-# =========================
-# 8. Lưu mô hình
-# =========================
-model.save_pretrained_merged("files_model/unsloth_finetune", tokenizer)
+    # Chuyển sang chế độ training
+    FastVisionModel.for_training(model)
+
+    # Tạo trainer
+    trainer = SFTTrainer(
+        model=model,
+        tokenizer=tokenizer,
+        data_collator=UnslothVisionDataCollator(model, tokenizer),
+        train_dataset=converted_dataset,
+        args=SFTConfig(
+            per_device_train_batch_size=2,
+            gradient_accumulation_steps=4,
+            warmup_steps=5,
+            max_steps=MAX_STEPS,
+            learning_rate=2e-4,
+            logging_steps=10,
+            optim="adamw_8bit",
+            weight_decay=0.01,
+            lr_scheduler_type="linear",
+            seed=SEED,
+            output_dir=OUTPUT_DIR,
+            report_to="none",
+            remove_unused_columns=False,
+            dataset_text_field="",
+            dataset_kwargs={"skip_prepare_dataset": True},
+            max_length=2048,
+        ),
+    )
+
+    # Train
+    trainer.train()
+
+    # Lưu model đã merge để dùng inference sau này
+    model.save_pretrained_merged(FINAL_MODEL_DIR, tokenizer)
+
+
+if __name__ == "__main__":
+    main()

@@ -5,12 +5,15 @@ import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s]: %(message)s')
 
 list_of_files = [
-    "data/images/train",
-    "data/images/val",
-    "data/images/test",
-    "data/labels/train",
-    "data/labels/val",
-    "data/labels/test",
+    "dataset/yolo/images/train",
+    "dataset/yolo/images/val",
+    "dataset/yolo/images/test",
+    "dataset/yolo/labels/train",
+    "dataset/yolo/labels/val",
+    "dataset/yolo/labels/test",
+    "dataset/license_plate.yaml",
+    "models/test.py",
+    "models/train_yolo.py",
     "requirements.txt",
     "setup.py",
     "app.py",

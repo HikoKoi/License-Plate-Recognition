@@ -3,7 +3,6 @@ from unsloth.trainer import UnslothVisionDataCollator
 from datasets import load_dataset
 from trl import SFTTrainer, SFTConfig
 
-
 MODEL_NAME = "unsloth/Qwen2-VL-2B-Instruct-bnb-4bit"   # model base 4bit
 OUTPUT_DIR = "models/unsloth_training_logs"            # log/checkpoint tạm
 FINAL_MODEL_DIR = "models/unsloth_ocr"                 # nơi lưu model đã merge

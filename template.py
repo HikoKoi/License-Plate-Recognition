@@ -10,6 +10,7 @@ list_of_files = [
     "dataset/yolo/images/test",
     "dataset/yolo/labels/train",
     "dataset/yolo/labels/val",
+    "dataset/outputs"
     "dataset/license_plate.yaml",
     "models",
     "src/finetune_ocr.py",

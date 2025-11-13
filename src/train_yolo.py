@@ -1,7 +1,6 @@
 import torch
 from ultralytics import YOLO
 
-
 MODEL_NAME = "models/yolov8n.pt"
 
 def main():

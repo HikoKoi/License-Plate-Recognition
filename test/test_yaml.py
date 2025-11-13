@@ -21,7 +21,7 @@ try:
         batch=2,
         device=0 if torch.cuda.is_available() else "cpu"
     )
-    print("YAML và dữ liệu OK (train 1 epoch test thành công).")
+    print("TEST YAML VÀ DỮ LIỆU THÀNH CÔNG !!!")
 except Exception as e:
     print("Có lỗi khi dùng YAML/dataset:")
     print(e)

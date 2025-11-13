@@ -100,7 +100,7 @@ class VideoCaptureThread:
 
 
 st.set_page_config(page_title="LPR - Real-time", page_icon="🚘", layout="wide")
-st.title("🚘 License Plate Recognition - Image & Real-time Stream")
+st.title("License Plate Recognition - Image & Real-time Stream")
 
 # Load models once
 with st.spinner("Loading models (YOLO + OCR)... this can take a while"):
@@ -146,7 +146,7 @@ if mode == "Image Upload":
                     )
                 
                 elapsed = time.time() - start
-                st.write('\n⏱️ Thời gian xử lý: {:02d}:{:02d}:{:02d}'.format(
+                st.write('\nThời gian xử lý: {:02d}:{:02d}:{:02d}'.format(
                     int(elapsed // 3600),
                     int((elapsed % 3600) // 60),
                     int(elapsed % 60)
@@ -165,7 +165,7 @@ elif mode == "Video Upload":
 
         # Hiển thị trạng thái xử lý
         status_placeholder = st.empty()
-        status_placeholder.info("⏳ Đang xử lý video, vui lòng chờ...")
+        status_placeholder.info("Đang xử lý video, vui lòng chờ...")
 
         frame_count = 0
         start_time = time.time()
@@ -196,7 +196,7 @@ elif mode == "Video Upload":
 
         # Hiển thị biển số theo dạng lưới gallery
         if detected_plates:
-            st.markdown("### 🚘 Biển số nhận diện được")
+            st.markdown("### Biển số nhận diện được:")
             cols_per_row = 4  # số cột mỗi hàng (tối ưu bề ngang)
             rows = (len(detected_plates) + cols_per_row - 1) // cols_per_row
             idx = 0
@@ -215,7 +215,7 @@ elif mode == "Video Upload":
 
         elapsed = time.time() - start_time
         status_placeholder.success(
-            '\n⏱️ Thời gian xử lý: {:02d}:{:02d}:{:02d}'.format(
+            '\nThời gian xử lý: {:02d}:{:02d}:{:02d}'.format(
                 int(elapsed // 3600),
                 int((elapsed % 3600) // 60),
                 int(elapsed % 60),

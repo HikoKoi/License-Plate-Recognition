@@ -1,9 +1,9 @@
-### License-Plate-Recognition | YOLOv8 + vLLM Qwen2-VL Fine-tuning ###
+### License-Plate-Recognition | YOLOv8 + VLM Qwen2-VL Fine-tuning ###
 
 Một hệ thống nhận diện và trích xuất biển số xe gồm 3 phần:
 1. **Huấn luyện mô hình YOLOv8** để phát hiện vị trí biển số xe (ô tô, xe máy).
-2. **Huấn luyện (Fine-tune) mô hình vLLM (image_to_text)** dựa trên `unsloth/Qwen2-VL-2B-Instruct-bnb-4bit` để trích xuất thông tin biển số xe.
-3. **Ứng dụng Streamlit** tích hợp mô hình YOLOv8 và mô hình vLLM đã fine-tune để trích xuất nội dung biển số theo thời gian thực hoặc từ ảnh tải lên.
+2. **Huấn luyện (Fine-tune) mô hình VLM (image_to_text)** dựa trên `unsloth/Qwen2-VL-2B-Instruct-bnb-4bit` để trích xuất thông tin biển số xe.
+3. **Ứng dụng Streamlit** tích hợp mô hình YOLOv8 và mô hình VLM đã fine-tune để trích xuất nội dung biển số theo thời gian thực hoặc từ ảnh tải lên.
 
 
 ## 🧠 Kiến trúc hệ thống
@@ -16,7 +16,7 @@ Một hệ thống nhận diện và trích xuất biển số xe gồm 3 phần
 ├── models                           # Chứa các mô hình được sử dụng
 │                           
 ├── src/
-│ ├── finetune_OCR.py                # Chương trình finetune mô hình vLLM
+│ ├── finetune_OCR.py                # Chương trình finetune mô hình VLM
 │ └── train_yolo.py                  # Chương trình huấn luyện mô hình YOLO
 │                  
 ├── main.py                          # Chương trình chính
